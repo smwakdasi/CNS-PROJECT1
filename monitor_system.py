@@ -7,20 +7,27 @@ import signal
 import random
 from plyer import notification
 
-# Step 1: Load the trained model
+# Load trained model
 model = joblib.load('ransomware_model.pkl')
 print("✅ Model loaded...")
 
+# Toggle this to simulate ransomware behavior
+simulate_ransomware = False  # Set to True if you want to simulate detection
+
 while True:
-    # Step 2: Gather real-time system stats
-    cpu = psutil.cpu_percent(interval=1)
-    mem = psutil.virtual_memory().percent
-    procs = len(psutil.pids())
+    # Get system stats (real or simulated)
+    if simulate_ransomware:
+        cpu = 97
+        mem = 93
+        procs = 350
+    else:
+        cpu = psutil.cpu_percent(interval=1)
+        mem = psutil.virtual_memory().percent
+        procs = len(psutil.pids())
 
-    print("🖥️ System Snapshot:")
-    print(f"CPU: {cpu}%, Memory: {mem}%, Processes: {procs}")
+    print(f"🖥️ CPU: {cpu}%, Memory: {mem}%, Processes: {procs}")
 
-    # Step 3: Build model input
+    # Format data as model input
     sample_input = pd.DataFrame([{
         "Machine": 332,
         "DebugSize": int(cpu),
@@ -42,26 +49,24 @@ while True:
     print("📦 Input to model:")
     print(sample_input)
 
-    # Step 4: Make prediction
+    # Make prediction
     result = model.predict(sample_input)[0]
-    verdict = "RANSOMWARE" if result == 0 else "Benign"
+    label = "RANSOMWARE DETECTED" if result == 0 else "Benign"
 
-    # Step 5: Log result
-    with open("logs.txt", "a") as log:
-        log.write(f"{time.ctime()} - Prediction: {verdict}\n")
+    # Log prediction
+    with open("logs.txt", "a", encoding="utf-8") as log:
+        log.write(f"{time.ctime()} - Prediction: {label}\n")
 
-    # Step 6: Display result
+    # Output and actions
     if result == 0:
         print("⚠️ RANSOMWARE DETECTED!\n")
-
-        # Alert user
         notification.notify(
             title="🚨 Ransomware Alert",
             message="⚠️ Suspicious system activity detected!",
             timeout=5
         )
 
-        # Kill notepad.exe (simulation target)
+        # Attempt to kill suspicious process (e.g., notepad.exe)
         for proc in psutil.process_iter(['pid', 'name']):
             try:
                 if 'notepad' in proc.info['name'].lower():
@@ -73,5 +78,4 @@ while True:
     else:
         print("✅ System is behaving normally.\n")
 
-    # Step 7: Wait before next check
     time.sleep(10)
