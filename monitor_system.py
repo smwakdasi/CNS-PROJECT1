@@ -7,19 +7,21 @@ import signal
 import random
 from plyer import notification
 
-# Load trained model
+# === Load the trained model ===
 model = joblib.load('ransomware_model.pkl')
 print("✅ Model loaded...")
 
-# Toggle this to simulate ransomware behavior
-simulate_ransomware = False  # Set to True if you want to simulate detection
+# === Toggle for simulation mode ===
+simulate_ransomware = False  # Set to True for demo simulation
+print("👀 Simulation mode:", simulate_ransomware)
 
+# === Main monitoring loop ===
 while True:
-    # Get system stats (real or simulated)
+    # Get real or simulated system metrics
     if simulate_ransomware:
-        cpu = 97
-        mem = 93
-        procs = 350
+        cpu = 95
+        mem = 92
+        procs = 340
     else:
         cpu = psutil.cpu_percent(interval=1)
         mem = psutil.virtual_memory().percent
@@ -27,11 +29,11 @@ while True:
 
     print(f"🖥️ CPU: {cpu}%, Memory: {mem}%, Processes: {procs}")
 
-    # Format data as model input
+    # Prepare sample input for model
     sample_input = pd.DataFrame([{
         "Machine": 332,
-        "DebugSize": int(cpu),
-        "DebugRVA": int(mem),
+        "DebugSize": cpu,
+        "DebugRVA": mem,
         "MajorImageVersion": 10,
         "MajorOSVersion": 10,
         "ExportRVA": procs,
@@ -43,21 +45,21 @@ while True:
         "SizeOfStackReserve": 262144,
         "DllCharacteristics": 16736,
         "ResourceSize": 1024,
-        "BitcoinAddresses": 0
+        "BitcoinAddresses": 0  # tweak to 0 if testing false positive avoidance
     }])
 
     print("📦 Input to model:")
     print(sample_input)
 
-    # Make prediction
+    # Prediction
     result = model.predict(sample_input)[0]
     label = "RANSOMWARE DETECTED" if result == 0 else "Benign"
 
-    # Log prediction
+    # Log result
     with open("logs.txt", "a", encoding="utf-8") as log:
         log.write(f"{time.ctime()} - Prediction: {label}\n")
 
-    # Output and actions
+    # Output + actions
     if result == 0:
         print("⚠️ RANSOMWARE DETECTED!\n")
         notification.notify(
@@ -66,7 +68,7 @@ while True:
             timeout=5
         )
 
-        # Attempt to kill suspicious process (e.g., notepad.exe)
+        # Try to kill known suspicious process (e.g., notepad.exe)
         for proc in psutil.process_iter(['pid', 'name']):
             try:
                 if 'notepad' in proc.info['name'].lower():
