@@ -105,12 +105,13 @@ if run_toggle:
                 "Memory (%)": mem_history
             }, index=timestamps))
 
-        # Log viewer panel
-        with log_viewer:
-            with open("logs.txt", "r", encoding="utf-8") as log:
-                content = log.read()
-                st.text_area("Log Output", content, height=200)
-
+        # === Live log viewer ===
+log_viewer = st.expander("📄 View Detection Logs", expanded=True)
+if os.path.exists("logs.txt"):
+    with log_viewer:
+        log_lines = open("logs.txt", "r", encoding="utf-8").readlines()
+        log_display = "".join(log_lines[-20:])  # Show only last 20 logs
+        st.text_area("Log Output (Last 20)", log_display, height=200)
         time.sleep(5)
 
     st.success("Detection cycle completed.")
