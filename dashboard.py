@@ -10,10 +10,10 @@ from datetime import datetime
 model = joblib.load("ransomware_model.pkl")
 
 # Streamlit UI Config
-st.set_page_config(page_title="🛡️ Ransomware Dashboard", layout="centered")
+st.set_page_config(page_title="Ransomware Dashboard", layout="centered")
 
-st.title("🛡️ Real-Time Ransomware Detection")
-st.markdown("Built with ❤️ using Streamlit")
+st.title("Real-Time Ransomware Detection")
+st.markdown("Built with using Streamlit")
 
 # Storage for metrics
 cpu_history = []
@@ -23,7 +23,7 @@ timestamps = []
 # Main containers
 col1, col2 = st.columns(2)
 placeholder = st.empty()
-log_viewer = st.expander("📄 View Detection Logs")
+log_viewer = st.expander("View Detection Logs")
 
 # Add start button
 start = st.button("Start Detection")
@@ -62,7 +62,7 @@ if start:
 
         # Prediction
         prediction = model.predict(sample_input)[0]
-        label = "⚠️ RANSOMWARE DETECTED!" if prediction == 0 else "✅ Benign"
+        label = "RANSOMWARE DETECTED!" if prediction == 0 else "Benign"
 
         # Log to file
         with open("logs.txt", "a") as log:
